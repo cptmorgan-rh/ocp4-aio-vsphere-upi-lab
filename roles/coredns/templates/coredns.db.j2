@@ -1,0 +1,35 @@
+$ORIGIN .
+$TTL 3600;
+{{ config.cluster_domain }}         IN SOA  ns1.{{ config.cluster_domain }}. hostmaster.{{ config.cluster_domain }}. (
+                                2011112904 ; serial
+                                60         ; refresh (1 minute)
+                                15         ; retry (15 seconds)
+                                1800       ; expire (30 minutes)
+                                10         ; minimum (10 seconds)
+                                )
+                        NS      ns1.{{ config.cluster_domain }}.
+$ORIGIN {{ config.cluster_domain }}.
+ns1                     A       {{ coredns_vm.ipaddr }}
+
+lb                      A       {{ lb_vm.ipaddr }}
+api                     A       {{ lb_vm.ipaddr }}
+api-int                 A       {{ lb_vm.ipaddr }}
+*.apps                  A       {{ lb_vm.ipaddr }}
+
+{{ infraID.stdout }}-bootstrap               A       {{ bootstrap_vm.ipaddr }}
+
+{% for master in master_vms %}
+{{ infraID.stdout }}-{{ master.name }}            A       {{ master.ipaddr }}
+{% endfor %}
+
+{% if worker_vms is defined %}
+{% for worker in worker_vms %}
+{{ infraID.stdout }}-{{ worker.name }}            A       {{ worker.ipaddr }}
+{% endfor %}
+{% endif %}
+
+{% if infra_vms is defined %}
+{% for infra in infra_vms %}
+{{ infraID.stdout }}-{{ infra.name }}            A       {{ infra.ipaddr }}
+{% endfor %}
+{% endif %}

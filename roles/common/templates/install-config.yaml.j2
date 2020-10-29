@@ -1,0 +1,33 @@
+apiVersion: v1
+baseDomain: {{ config.base_domain }}
+compute:
+- hyperthreading: Enabled
+  name: worker
+{% if config.provider is defined and 'none' in config.provider %}
+  replicas: {{ worker_vms | length }}
+{% else %}
+  replicas: 0
+{% endif %}
+controlPlane:
+  hyperthreading: Enabled
+  name: master
+  replicas: 3
+metadata:
+  name: {{ config.cluster_name }}
+platform:
+{% if config.provider is defined and 'none' in config.provider %}
+  none: {}
+{% else %}
+  vsphere:
+    vcenter: {{ vcenter.ip }}
+    username: {{ vcenter.service_account_username }}
+    password: {{ vcenter.service_account_password }}
+    datacenter: {{ vcenter.datacenter }}
+    defaultDatastore: {{ vcenter.datastore }}
+{% if vcenter.folder_absolute_path|type_debug != "NoneType" %}
+    folder: {{ vcenter.folder_absolute_path }}
+{% endif %}
+{% endif %}
+fips: {{ config.fips }}
+pullSecret: '{{ config.pull_secret | to_json }}'
+sshKey: '{{ config.installer_ssh_key }}'

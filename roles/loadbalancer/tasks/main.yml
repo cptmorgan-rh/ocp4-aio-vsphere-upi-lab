@@ -1,0 +1,73 @@
+---
+
+- name: Create Temp Build Directory for CoreDNS
+  tempfile:
+    state: directory
+    suffix: lb
+  register: lb_tempdir
+
+- name: Create haproxy.cfg file in {{ lb_tempdir.path }}/
+  template:
+    src: templates/haproxy.cfg.j2
+    dest: "{{ lb_tempdir.path }}/haproxy.cfg"
+    mode: 0664
+
+- name: Set haproxy_cfg_b64 Fact
+  set_fact:
+    haproxy_cfg_b64: "{{ lookup('file', '{{ lb_tempdir.path }}/haproxy.cfg') | b64encode }}" # noqa 207
+
+- name: Create lb.ign in {{ lb_tempdir.path }}/
+  template:
+    src: templates/lb.ign.j2
+    dest: "{{ lb_tempdir.path }}/lb.ign"
+    mode: 0664
+
+- name: Set lb_ign Fact
+  set_fact:
+    lb_ign: "{{ lookup('file', '{{ lb_tempdir.path }}/lb.ign') | b64encode }}" # noqa 207
+
+- name: Create lb.merged.ign in {{ lb_tempdir.path }}/
+  template:
+    src: templates/lb.merged.ign.j2
+    dest: "{{ lb_tempdir.path }}/lb.merged.ign"
+    mode: 0664
+
+- name: Set lb_merged_ign Fact
+  set_fact:
+    lb_merged_ign: "{{ lookup('file', '{{ lb_tempdir.path }}/lb.merged.ign') | b64encode }}" # noqa 207
+
+- name: Create HAProxy Loadbalancer VM from the template
+  vmware_guest:
+    hostname: "{{ vcenter.ip }}"
+    username: "{{ vcenter.service_account_username }}"
+    password: "{{ vcenter.service_account_password }}"
+    datacenter: "{{ vcenter.datacenter }}"
+    validate_certs: no
+    folder: "{{ vcenter.folder_absolute_path }}"
+    name: "{{ infraID.stdout }}-{{ lb_vm.name }}"
+    state: "{{ vcenter.vm_power_state }}"
+    template: "{{ vcenter.template_name }}"
+    disk:
+    - size_gb: 16
+      type: thin
+      datastore: "{{ vcenter.datastore }}"
+    hardware:
+      memory_mb: 2048
+      num_cpus: 1
+      memory_reservation_lock: True
+    networks:
+    - name: "{{ vcenter.network }}"
+    wait_for_ip_address: no
+    customvalues:
+     - key: guestinfo.ignition.config.data
+       value: "{{ lb_merged_ign }}"
+     - key: guestinfo.ignition.config.data.encoding
+       value: base64
+     - key: guestinfo.afterburn.initrd.network-kargs
+       value: "ip={{ lb_vm.ipaddr }}::{{ static_ip.gateway }}:{{ static_ip.netmask }}:{{ infraID.stdout }}-{{ lb_vm.name }}:ens192:off:{{ coredns_vm.ipaddr }}" # noqa 204
+
+- name: Remove {{ coredns_tempdir.path }} and contents
+  file:
+    path: "{{ lb_tempdir.path }}"
+    state: absent
+  when: lb_tempdir.path is defined

@@ -1,0 +1,13 @@
+.:53 {
+    health :8080 {
+        lameduck 1s
+    }
+    forward . {{ coredns_vm.upstream_dns }}
+    errors
+}
+
+{{ config.cluster_domain }}:53 {
+    file /root/coredns.db
+    log
+    errors
+}

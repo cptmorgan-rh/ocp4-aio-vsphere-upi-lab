@@ -1,0 +1,91 @@
+  - name: Create bootstrap VM from the template
+    vmware_guest:
+      hostname: "{{ vcenter.ip }}"
+      username: "{{ vcenter.service_account_username }}"
+      password: "{{ vcenter.service_account_password }}"
+      datacenter: "{{ vcenter.datacenter }}"
+      validate_certs: no
+      folder: "{{ vcenter.folder_absolute_path }}"
+      name: "{{ infraID.stdout }}-{{ bootstrap_vm.name }}"
+      state: "{{ vcenter.vm_power_state }}"
+      template: "{{ vcenter.template_name }}"
+      disk:
+      - size_gb: 120
+        type: thin
+        datastore: "{{ vcenter.datastore }}"
+      hardware:
+        memory_mb: 16384
+        num_cpus: 4
+        memory_reservation_lock: True
+      networks:
+      - name: "{{ vcenter.network }}"
+      wait_for_ip_address: no
+      customvalues:
+        - key: guestinfo.ignition.config.data
+          value: "{{ BootstrapContent }}"
+        - key: guestinfo.ignition.config.data.encoding
+          value: base64
+        - key: guestinfo.afterburn.initrd.network-kargs
+          value: "ip={{ bootstrap_vm.ipaddr }}::{{ static_ip.gateway }}:{{ static_ip.netmask }}:{{ infraID.stdout }}-{{ bootstrap_vm.name }}:ens192:off:{{ coredns_vm.ipaddr }}" # noqa 204
+
+  - name: Create master VMs from ther template
+    vmware_guest:
+      hostname: "{{ vcenter.ip }}"
+      username: "{{ vcenter.service_account_username }}"
+      password: "{{ vcenter.service_account_password }}"
+      datacenter: "{{ vcenter.datacenter }}"
+      validate_certs: no
+      folder: "{{ vcenter.folder_absolute_path }}"
+      name: "{{ infraID.stdout }}-{{ item.name }}"
+      state: "{{ vcenter.vm_power_state }}"
+      template: "{{ vcenter.template_name }}"
+      disk:
+      - size_gb: "{{ item.disk_size_gb }}"
+        type: thin
+        datastore: "{{ vcenter.datastore }}"
+      hardware:
+        memory_mb: "{{ item.memory_mb }}"
+        num_cpus: "{{ item.cpus }}"
+        memory_reservation_lock: True
+      networks:
+      - name: "{{ vcenter.network }}"
+      wait_for_ip_address: no
+      customvalues:
+       - key: guestinfo.ignition.config.data
+         value: "{{ masterContent }}"
+       - key: guestinfo.ignition.config.data.encoding
+         value: base64
+       - key: guestinfo.afterburn.initrd.network-kargs
+         value: "ip={{ item.ipaddr }}::{{ static_ip.gateway }}:{{ static_ip.netmask }}:{{ infraID.stdout }}-{{ item.name }}:ens192:off:{{ coredns_vm.ipaddr }}" # noqa 204
+    loop: "{{ master_vms }}"
+
+  - name: Create worker VMs from the template
+    vmware_guest:
+      hostname: "{{ vcenter.ip }}"
+      username: "{{ vcenter.service_account_username }}"
+      password: "{{ vcenter.service_account_password }}"
+      datacenter: "{{ vcenter.datacenter }}"
+      validate_certs: no
+      folder: "{{ vcenter.folder_absolute_path }}"
+      name: "{{ infraID.stdout }}-{{ item.name }}"
+      state: "{{ vcenter.vm_power_state }}"
+      template: "{{ vcenter.template_name }}"
+      disk:
+      - size_gb: "{{ item.disk_size_gb }}"
+        type: thin
+        datastore: "{{ vcenter.datastore }}"
+      hardware:
+        memory_mb: "{{ item.memory_mb }}"
+        num_cpus: "{{ item.cpus }}"
+        memory_reservation_lock: True
+      networks:
+      - name: "{{ vcenter.network }}"
+      wait_for_ip_address: no
+      customvalues:
+       - key: guestinfo.ignition.config.data
+         value: "{{ workerContent }}"
+       - key: guestinfo.ignition.config.data.encoding
+         value: base64
+       - key: guestinfo.afterburn.initrd.network-kargs
+         value: "ip={{ item.ipaddr }}::{{ static_ip.gateway }}:{{ static_ip.netmask }}:{{ infraID.stdout }}-{{ item.name }}:ens192:off:{{ coredns_vm.ipaddr }}" # noqa 204
+    loop: "{{ worker_vms }}"

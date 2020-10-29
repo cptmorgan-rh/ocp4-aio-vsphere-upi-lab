@@ -1,0 +1,52 @@
+  - name: Check to make sure multiple OCP Versions not set
+    fail:
+      msg: "specific_version variable cannot be used when download.channel and download.version is set"
+    when:
+      - specific_version is defined
+      - download.channel | type_debug != "NoneType"
+      - download.version | type_debug != "NoneType"
+
+  - name: Set clients_url fact
+    set_fact:
+      clients_url: "https://mirror.openshift.com/pub/openshift-v4/clients/ocp/{{ download.channel }}-{{ download.version }}"
+    when:
+      - specific_version is not defined
+
+  - name: Set clients_url fact
+    set_fact:
+      clients_url: "https://mirror.openshift.com/pub/openshift-v4/clients/ocp/{{ specific_version }}"
+    when:
+      - specific_version is defined
+
+  - name: Set clients_url factt when specific_version is defined.
+    set_fact:
+      rhcos_url: "https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/{{ specific_version.split('.')[0:2] | join('.') }}/latest"
+    when:
+      - specific_version is defined
+
+  - name: Set clients_url fact when specific_version is not defined.
+    set_fact:
+      rhcos_url: "https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/{{ download.version }}/latest"
+    when:
+      - specific_version is not defined
+
+  - name: Fetch the content of the sha256sum.txt from the clients downloads page
+    uri:
+      url: "{{ clients_url }}/sha256sum.txt"
+      return_content: yes
+    register: clients_content
+
+  - name: Fetch the content of the sha256sum.txt from the rhcos downloads page
+    uri:
+      url: "{{ rhcos_url }}/sha256sum.txt"
+      return_content: yes
+    register: rhcos_content
+
+  - name:  Set the download facts for localhost, which will be used later
+    set_fact:
+      download: "{{ download | combine({ item.key : item.value }, recursive=True) }}"
+    when: inventory_hostname == "localhost"
+    loop:
+      - { key: "ova", value: "{{ rhcos_url }}/{{ rhcos_content.content | regex_search('rhcos.*.ova') }}" }
+      - { key: "openshiftClient", value: "{{ clients_url }}/{{ clients_content.content | regex_search('openshift-client-linux-.*.tar.gz') }}" }
+      - { key: "openshiftInstall", value: "{{ clients_url }}/{{ clients_content.content | regex_search('openshift-install-linux-.*.tar.gz') }}" }

@@ -1,0 +1,83 @@
+---
+
+- name: Create Temp Build Directory for CoreDNS
+  tempfile:
+    state: directory
+    suffix: coredns
+  register: coredns_tempdir
+
+- name: Create coredns.db file in "{{ coredns_tempdir.path }}"/
+  template:
+    src: templates/coredns.db.j2
+    dest: "{{ coredns_tempdir.path }}/coredns.db"
+    mode: 0664
+
+- name: Set coredns_db_b64 Fact
+  set_fact:
+    coredns_db_b64: "{{ lookup('file', '{{ coredns_tempdir.path }}/coredns.db') | b64encode }}" # noqa 207
+
+- name: Create Corefile_b64 file in "{{ coredns_tempdir.path }}"/
+  template:
+    src: templates/Corefile.j2
+    dest: "{{ coredns_tempdir.path }}/Corefile"
+    mode: 0664
+
+- name: Set Corefile Fact
+  set_fact:
+    Corefile_b64: "{{ lookup('file', '{{ coredns_tempdir.path }}/Corefile') | b64encode }}" # noqa 207
+
+- name: Create CoreDNS.ign in "{{ coredns_tempdir.path }}"/
+  template:
+    src: templates/CoreDNS.ign.j2
+    dest: "{{ coredns_tempdir.path }}/CoreDNS.ign"
+    mode: 0664
+
+- name: Set CoreDNS_ign Fact
+  set_fact:
+    CoreDNS_ign: "{{ lookup('file', '{{ coredns_tempdir.path }}/CoreDNS.ign') | b64encode }}" # noqa 207
+
+- name: Create CoreDNS.merged.ign in "{{ coredns_tempdir.path }}"/
+  template:
+    src: templates/CoreDNS.merged.ign.j2
+    dest: "{{ coredns_tempdir.path }}/CoreDNS.merged.ign"
+    mode: 0664
+
+- name: Set CoreDNS_merged_ign Fact
+  set_fact:
+    CoreDNS_merged_ign: "{{ lookup('file', '{{ coredns_tempdir.path }}/CoreDNS.merged.ign') | b64encode }}" # noqa 207
+
+- name: Create CoreDNS VMs from the template
+  vmware_guest:
+    hostname: "{{ vcenter.ip }}"
+    username: "{{ vcenter.service_account_username }}"
+    password: "{{ vcenter.service_account_password }}"
+    datacenter: "{{ vcenter.datacenter }}"
+    validate_certs: no
+    folder: "{{ vcenter.folder_absolute_path }}"
+    name: "{{ infraID.stdout }}-{{ coredns_vm.name }}"
+    state: "{{ vcenter.vm_power_state }}"
+    template: "{{ vcenter.template_name }}"
+    disk:
+    - size_gb: 16
+      type: thin
+      datastore: "{{ vcenter.datastore }}"
+    hardware:
+      memory_mb: 2048
+      num_cpus: 1
+      memory_reservation_lock: True
+    networks:
+    - name: "{{ vcenter.network }}"
+    wait_for_ip_address: no
+    customvalues:
+     - key: guestinfo.ignition.config.data
+       value: "{{ CoreDNS_merged_ign }}"
+     - key: guestinfo.ignition.config.data.encoding
+       value: base64
+     - key: guestinfo.afterburn.initrd.network-kargs
+       value: "ip={{ coredns_vm.ipaddr }}::{{ static_ip.gateway }}:{{ static_ip.netmask }}:{{ infraID.stdout }}-{{ coredns_vm.name }}:ens192:off:{{ coredns_vm.upstream_dns }}" # noqa 204
+
+- name: Remove {{ coredns_tempdir.path }} and contents
+  file:
+    path: "{{ coredns_tempdir.path }}"
+    state: absent
+  when: coredns_tempdir.path is defined

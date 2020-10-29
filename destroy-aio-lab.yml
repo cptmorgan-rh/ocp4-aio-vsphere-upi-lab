@@ -1,0 +1,56 @@
+- hosts: localhost
+  gather_facts: False
+  environment:
+    PATH: "{{ playbook_dir }}/bin:{{ ansible_env.PATH }}"
+    GOVC_USERNAME: "{{ vcenter.admin_username }}"
+    GOVC_PASSWORD: "{{ vcenter.admin_password }}"
+    GOVC_URL: "https://{{ vcenter.ip }}"
+    GOVC_DATACENTER: "{{ vcenter.datacenter }}"
+    GOVC_INSECURE: 1
+
+  tasks:
+
+    - name: Check if the vCenter folder already exists
+      command: "govc folder.info {{ vcenter.folder_absolute_path }}" # noqa 301
+      register: folder_exists
+      ignore_errors: yes
+
+    - name: Get Cluster infraID
+      command: jq -r .infraID "{{ playbook_dir }}/install-dir/metadata.json"  # noqa 301
+      register: infraID
+
+    - name: Delete Bootstrap
+      command: "govc vm.destroy {{ infraID.stdout }}-{{ bootstrap_vm.name }}"  # noqa 301
+      when: bootstrap is defined
+
+    - name: Delete Cluster
+      shell: "govc find -type m | grep {{ infraID.stdout }} | grep -v {{ vcenter.template_name }} | cut -d/ -f4 | xargs govc vm.destroy"  # noqa 301 306
+      when: cluster is defined
+
+    - name: Delete Red Hat CoreOS Template
+      command: "govc vm.destroy {{ vcenter.template_name }}"  # noqa 301
+      when:
+        - cluster is defined
+        - skip_ova is not defined
+
+    - name: Delete VM Folder
+      command: "govc object.destroy ./vm/{{ infraID.stdout }}"  # noqa 301
+      when:
+        - folder_exists.rc == 0
+        - cluster is defined
+        - skip_ova is not defined
+
+    - name: Delete VM Folder
+      command: "govc object.destroy {{ vcenter.folder_absolute_path }}"  # noqa 301
+      when:
+        - folder_exists.rc != 0
+        - cluster is defined
+        - skip_ova is not defined
+
+    - name: Delete VM Tag
+      command: "govc tags.rm {{ infraID.stdout }}"  # noqa 301
+      when: cluster is defined
+
+    - name: Delete VM Tag Category
+      command: "govc tags.category.rm {{ infraID.stdout }}"  # noqa 301
+      when: cluster is defined

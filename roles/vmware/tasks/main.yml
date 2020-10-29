@@ -1,0 +1,14 @@
+  - name: Check if the vCenter folder already exists
+    command: "govc folder.info {{ vcenter.folder_absolute_path }}" # noqa 301
+    register: folder_exists
+    ignore_errors: yes
+
+  - name: Create the vCenter folder by the same name as the cluster, only if it doesn't exist
+    command: "govc folder.create {{ vcenter.folder_absolute_path }}" # noqa 301
+    when: folder_exists.rc != 0
+
+  - name: Create VMware Tag Category
+    command: "govc tags.category.create {{ infraID.stdout }}" # noqa 301
+
+  - name: Create VMware Tag
+    command: "govc tags.create -c {{ infraID.stdout }} {{ infraID.stdout }}" # noqa 301
