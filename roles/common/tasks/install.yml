@@ -26,7 +26,7 @@
       command: "openshift-install create ignition-configs --dir={{ playbook_dir }}/install-dir" # noqa 301
 
     - name: Get Cluster infraID
-      command: jq -r .infraID "{{ playbook_dir }}/install-dir/metadata.json"
+      command: jq -r .infraID "{{ playbook_dir }}/install-dir/metadata.json" # noqa 301
       register: infraID
 
     - name: Set the vcenter.infraID fact
