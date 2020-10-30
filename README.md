@@ -31,6 +31,7 @@ This is a concise summary of everything you need to do to use the repo. Rest of 
    * Before you install Ansible, install the `epel-release`, run `yum -y install epel-release`
 4. Your DNS Provider (PiHole, AdGuard, etc) should be configured to lookup your `base_domain` from your `coredns_vm.ipaddr`
    * Optionally, you configure the `coredns_vm.upstream_dns` to be your primary DNS Server and then configure your workstation or bastion host to use the CoreDNS Server as your primary DNS Server.
+   * If you wish to use the CoreDNS as your primary DNS Server see the [deploy-aio-lab.yml Extra Variables](https://github.com/cptmorgan-rh/ocp4-aio-vsphere-upi-lab#deploy-aio-labyml-extra-variables) section below.
 
  ## Installation Steps
 
@@ -76,21 +77,26 @@ ansible-playbook deploy-aio-lab.yml
 ```
 ### deploy-aio-lab.yml Extra Variables
 
-`skip_ova=true` - Skips downloading and deploying the OVA if previous deployed to vCenter
+`config_resolv=true` - Configures /etc/resolv.conf to use CoreDNS as primary DNS after CoreDNS has been deployed.
 
-`skip_lb=true` - Skips deploying the LoadBalancer VM if a LoadBalancer already exists
+`skip_ova=true` - Skips downloading and deploying the OVA if previous deployed to vCenter.
 
-`skip_dns=true` - Skips deploying a DNS server if proper DNS is already configured
+`skip_lb=true` - Skips deploying the LoadBalancer VM if a LoadBalancer already exists.
 
-`specific_version=4.6.z` - Deploys a specific version of OpenShift. Must be in 4.x.z format
+`skip_dns=true` - Skips deploying a DNS server if proper DNS is already configured.
+
+`specific_version=4.6.z` - Deploys a specific version of OpenShift. Must be in 4.x.z format.
 
 ### Run Destroy Playbook
 ```sh
 # Destroy the Lab and all components
-ansible-playbook deploy-aio-lab.yml
+ansible-playbook deploy-aio-lab.yml -e cluster=true
 
 # Destroy the Lab and all components while retaining the ova
-ansible-playbook destroy-aio-lab.yml -e skip_ova=true
+ansible-playbook destroy-aio-lab.yml -e cluster=true -e skip_ova=true
+
+# Destroy the Lab and all components and revert /etc/resolv.conf
+ansible-playbook destroy-aio-lab.yml -e cluster=true -e config_resolv=true
 ```
 ***NOTE: The OVA file needs to be outside of the Cluster Folder in VMware for `-e skip_ova=true` to work***
 

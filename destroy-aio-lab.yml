@@ -10,6 +10,12 @@
 
   tasks:
 
+    - name: Restore backup of /etc/resolv.conf
+      copy:
+        src: /etc/resolv.conf.backup-aio
+        dest: /etc/resolv.conf
+        mode: '0644'
+
     - name: Check if the vCenter folder already exists
       command: "govc folder.info {{ vcenter.folder_absolute_path }}" # noqa 301
       register: folder_exists
