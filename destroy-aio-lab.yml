@@ -15,6 +15,7 @@
         src: /etc/resolv.conf.backup-aio
         dest: /etc/resolv.conf
         mode: '0644'
+      when: config_resolv is defined
 
     - name: Check if the vCenter folder already exists
       command: "govc folder.info {{ vcenter.folder_absolute_path }}" # noqa 301
