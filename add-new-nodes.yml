@@ -1,0 +1,25 @@
+---
+- hosts: localhost
+  gather_facts: False
+  environment:
+    PATH: "{{ playbook_dir }}/bin:{{ ansible_env.PATH }}"
+    GOVC_USERNAME: "{{ vcenter.admin_username }}"
+    GOVC_PASSWORD: "{{ vcenter.admin_password }}"
+    GOVC_URL: "https://{{ vcenter.ip }}"
+    GOVC_DATACENTER: "{{ vcenter.datacenter }}"
+    GOVC_INSECURE: 1
+  tasks:
+    - name: Get Cluster infraID
+      command: jq -r .infraID "{{ playbook_dir }}/install-dir/metadata.json"  # noqa 301
+      register: infraID
+
+    - name: Run the add-new-nodes role
+      import_role:
+        name: add_new_nodes
+
+    - name: Delete CoreDNS Server
+      command: "govc vm.destroy {{ infraID.stdout }}-{{ coredns_vm.name }}"
+
+    - name: Redeploy CoreDNS Server
+      import_role:
+        name: coredns

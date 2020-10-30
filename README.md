@@ -118,6 +118,13 @@ oc whoami
 oc get co
 ```
 
+### Add additional worker nodes after deploying the cluster_name
+
+1. Add a new line to `group_vars\all.yml`
+   Ex. `- { name: "worker3", ipaddr: "10.0.0.26", cpus: "2", memory_mb: "8192", disk_size_gb: "120"}`
+2. Run `add-new-nodes.yml` playbook and specify the amount of new nodes as a extra-variable.
+   Ex. `ansible-playbook add-new-nodes.yml -e new_nodes=1`
+
 ## Special Thanks:
 
 Vijay Chintalapati, Mike Allmen, and all the contributors to [ocp4-vsphere-upi-automation Repo](https://github.com/RedHatOfficial/ocp4-vsphere-upi-automation) that inspired this repository.
