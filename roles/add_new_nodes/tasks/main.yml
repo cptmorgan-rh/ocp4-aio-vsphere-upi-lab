@@ -1,0 +1,72 @@
+- name: Set the vcenter.infraID fact
+  set_fact:
+    vcenter_folder: "{{ infraID.stdout }}"
+  when: vcenter.folder_absolute_path is defined and vcenter.folder_absolute_path | type_debug == "NoneType"
+
+- name: Set the datacenter variable
+  set_fact:
+    datacenter: "{{ vcenter.datacenter }}"
+
+- name: Set the vcenter.folder_absolute_path if not provided
+  set_fact:
+    vcenter: "{{ vcenter | combine({'folder_absolute_path': '/'+datacenter+'/vm/'+vcenter_folder}, recursive=True) }}"
+  when: vcenter.folder_absolute_path is defined and vcenter.folder_absolute_path | type_debug == "NoneType"
+
+- name: Check for nodes in vCenter
+  shell: "govc find -type m | grep {{ infraID.stdout }} | awk -F/ '{ print $NF }'"  # noqa 301 306
+  register: govc_output
+
+- name: Create worker VMs from the template
+  vmware_guest:
+    hostname: "{{ vcenter.ip }}"
+    username: "{{ vcenter.service_account_username }}"
+    password: "{{ vcenter.service_account_password }}"
+    datacenter: "{{ vcenter.datacenter }}"
+    validate_certs: no
+    folder: "{{ vcenter.folder_absolute_path }}"
+    name: "{{ infraID.stdout }}-{{ item.name }}"
+    state: "{{ vcenter.vm_power_state }}"
+    template: "{{ vcenter.template_name }}"
+    disk:
+    - size_gb: "{{ item.disk_size_gb }}"
+      type: thin
+      datastore: "{{ vcenter.datastore }}"
+    hardware:
+      memory_mb: "{{ item.memory_mb }}"
+      num_cpus: "{{ item.cpus }}"
+      memory_reservation_lock: True
+    networks:
+    - name: "{{ vcenter.network }}"
+    wait_for_ip_address: no
+    customvalues:
+     - key: guestinfo.ignition.config.data
+       value: "{{ workerContent }}"
+     - key: guestinfo.ignition.config.data.encoding
+       value: base64
+     - key: guestinfo.afterburn.initrd.network-kargs
+       value: "ip={{ item.ipaddr }}::{{ static_ip.gateway }}:{{ static_ip.netmask }}:{{ infraID.stdout }}-{{ item.name }}:ens192:off:{{ coredns_vm.ipaddr }}" # noqa 204
+  when: '"{{ infraID.stdout }}-{{ item.name }}" not in govc_output.stdout_lines' # noqa 102
+  loop: "{{ worker_vms }}"
+  register: new_nodes
+
+- name: Wait for node-bootstraper csrs to approve
+  shell: oc get csr -o json --kubeconfig="{{ playbook_dir }}"/install-dir/auth/kubeconfig | jq -r '.items[] | select(.status == {}) | .metadata.name' # noqa 204 301 306
+  register: result_csr
+  until: result_csr['stdout_lines']|count == new_nodes|int
+  retries: 60
+  delay: 60
+
+- name: Approve the csrs
+  command: oc adm certificate approve "{{ item }}" --kubeconfig="{{ playbook_dir }}"/install-dir/auth/kubeconfig # noqa 301
+  loop: "{{ result_csr['stdout_lines'] }}"
+
+- name: Wait for system:node csrs to approve
+  shell: oc get csr -o json --kubeconfig="{{ playbook_dir }}"/install-dir/auth/kubeconfig | jq -r '.items[] | select(.status == {}) | .metadata.name'  # noqa 204 301 306
+  register: result_system
+  until: result_system['stdout_lines']|count == new_nodes|int
+  retries: 60
+  delay: 60
+
+- name: Approve the csrs
+  command: oc adm certificate approve "{{ item }}" --kubeconfig="{{ playbook_dir }}"/install-dir/auth/kubeconfig # noqa 301
+  loop: "{{ result_system['stdout_lines'] }}"
