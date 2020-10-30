@@ -17,14 +17,28 @@
         mode: '0644'
       when: config_resolv is defined
 
-    - name: Check if the vCenter folder already exists
-      command: "govc folder.info {{ vcenter.folder_absolute_path }}" # noqa 301
-      register: folder_exists
-      ignore_errors: yes
+    - name: Set the datacenter variable
+      set_fact:
+        datacenter: "{{ vcenter.datacenter }}"
 
     - name: Get Cluster infraID
       command: jq -r .infraID "{{ playbook_dir }}/install-dir/metadata.json"  # noqa 301
       register: infraID
+
+    - name: Set the vcenter.infraID fact
+      set_fact:
+        vcenter_folder: "{{ infraID.stdout }}"
+      when: vcenter.folder_absolute_path is defined and vcenter.folder_absolute_path | type_debug == "NoneType"
+
+    - name: Set the vcenter.folder_absolute_path if not provided
+      set_fact:
+        vcenter: "{{ vcenter | combine({'folder_absolute_path': '/'+datacenter+'/vm/'+vcenter_folder}, recursive=True) }}"
+      when: vcenter.folder_absolute_path is defined and vcenter.folder_absolute_path | type_debug == "NoneType"
+
+    - name: Check if the vCenter folder already exists
+      command: "govc folder.info {{ vcenter.folder_absolute_path }}" # noqa 301
+      register: folder_exists
+      ignore_errors: yes
 
     - name: Delete Bootstrap
       command: "govc vm.destroy {{ infraID.stdout }}-{{ bootstrap_vm.name }}"  # noqa 301
@@ -41,16 +55,8 @@
         - skip_ova is not defined
 
     - name: Delete VM Folder
-      command: "govc object.destroy ./vm/{{ infraID.stdout }}"  # noqa 301
-      when:
-        - folder_exists.rc == 0
-        - cluster is defined
-        - skip_ova is not defined
-
-    - name: Delete VM Folder
       command: "govc object.destroy {{ vcenter.folder_absolute_path }}"  # noqa 301
       when:
-        - folder_exists.rc != 0
         - cluster is defined
         - skip_ova is not defined
 
