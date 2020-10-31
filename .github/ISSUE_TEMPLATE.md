@@ -2,7 +2,7 @@
 
 ------------------------------
 
-## Expected Behaivor
+## Expected Behavior
 <!--- What should happen -->
 
 
