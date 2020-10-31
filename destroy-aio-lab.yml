@@ -35,11 +35,6 @@
         vcenter: "{{ vcenter | combine({'folder_absolute_path': '/'+datacenter+'/vm/'+vcenter_folder}, recursive=True) }}"
       when: vcenter.folder_absolute_path is defined and vcenter.folder_absolute_path | type_debug == "NoneType"
 
-    - name: Check if the vCenter folder already exists
-      command: "govc folder.info {{ vcenter.folder_absolute_path }}" # noqa 301
-      register: folder_exists
-      ignore_errors: yes
-
     - name: Delete Bootstrap
       command: "govc vm.destroy {{ infraID.stdout }}-{{ bootstrap_vm.name }}"  # noqa 301
       when: bootstrap is defined
@@ -58,7 +53,6 @@
       command: "govc object.destroy {{ vcenter.folder_absolute_path }}"  # noqa 301
       when:
         - cluster is defined
-        - skip_ova is not defined
 
     - name: Delete VM Tag
       command: "govc tags.rm {{ infraID.stdout }}"  # noqa 301

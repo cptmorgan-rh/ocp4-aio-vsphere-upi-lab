@@ -1,3 +1,14 @@
+  - name: Check if the RHCOS template already exists
+    shell: "govc find -type m | grep {{ vcenter.template_name }}" # noqa 301
+    register: template_exists
+    ignore_errors: yes
+
+  - name: Delete RHCOS template if skip_ova=false
+    command: "govc vm.destroy {{ vcenter.template_name }}" # noqa 301
+    when:
+      - skip_ova is not defined
+      - template_exists.rc == 0
+
   - name: Download the ova file
     get_url:
       url: "{{ download.ova }}"
@@ -20,12 +31,4 @@
       ova: "{{ playbook_dir }}/downloads/{{ vcenter.template_name }}.ova"
       power_on: False
       validate_certs: False
-    when: skip_ova is not defined
-
-  - name: Remove the Network Adapter
-    command: "govc device.remove -vm {{ vcenter.folder_absolute_path }}/{{ vcenter.template_name }} ethernet-0"
-    when: skip_ova is not defined
-
-  - name: Update VM options on the template
-    command: "govc vm.change -vm {{ vcenter.folder_absolute_path }}/{{ vcenter.template_name }} -latency high -e=disk.EnableUUID=TRUE -e=guestinfo.ignition.config.data.encoding=base64 -e=guestinfo.ignition.config.data=blah" # noqa 204
     when: skip_ova is not defined
