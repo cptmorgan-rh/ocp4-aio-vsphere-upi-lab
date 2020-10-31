@@ -98,6 +98,14 @@ ansible-playbook destroy-aio-lab.yml -e cluster=true -e skip_ova=true
 # Destroy the Lab and all components and revert /etc/resolv.conf
 ansible-playbook destroy-aio-lab.yml -e cluster=true -e config_resolv=true
 ```
+### destroy-aio-lab.yml Extra Variables
+
+`cluster=true` - Required to delete the entire cluster, ova, folder, and vwware tag.
+
+`skip_ova=true` - Skips downloading and deploying the OVA if previous deployed to vCenter.
+
+`bootstrap=true` - To delete the bootstrap VM
+
 ***NOTE: The OVA file needs to be outside of the Cluster Folder in VMware for `-e skip_ova=true` to work***
 
 
@@ -108,8 +116,8 @@ ansible-playbook destroy-aio-lab.yml -e cluster=true -e config_resolv=true
 4. OpenShift client, install and .ova binaries downloaded to the **downloads** folder
 5. Unzipped versions of the binaries installed in the **bin** folder
 6. In the **install-dir** folder:
-   2. master.ign and worker.ign
-   3. Copy of the install-config.yaml
+   1. master.ign and worker.ign
+   2. Copy of the install-config.yaml
 7. A folder is created in the vCenter under the mentioned datacenter and the template is imported
 8. The template file is edited to carry certain default settings and runtime parameters common to all the VMs
 9. VMs (coredns, lb, bootstrap, master0-2, worker0-2) are generated in the designated folder and (in state of) **poweredon**
@@ -128,8 +136,11 @@ oc get co
 
 1. Add a new line to `group_vars\all.yml`
    Ex. `- { name: "worker3", ipaddr: "10.0.0.26", cpus: "2", memory_mb: "8192", disk_size_gb: "120"}`
-2. Run `add-new-nodes.yml` playbook and specify the amount of new nodes as a extra-variable.
-   Ex. `ansible-playbook add-new-nodes.yml -e new_nodes=1`
+2. Running `add-new-nodes.yml` will add all additional new worker nodes and redeploy CoreDNS and the HAProxy LB with the new node information.
+   * To not redeploy the CoreDNS vm add the extra variable `skip_dns=true`
+   * To not redeploy the HAProxy LB vm add the extra variable `skip_lb=true`
+3. If you choose to redeploy the HAProxy LB vm you can scale the ingress controller by following these steps: [Scaling an Ingress Controller
+](https://docs.openshift.com/container-platform/4.6/networking/ingress-operator.html#nw-ingress-controller-configuration_configuring-ingress)
 
 ## Special Thanks:
 

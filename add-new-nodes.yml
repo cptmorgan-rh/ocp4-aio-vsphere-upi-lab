@@ -10,7 +10,7 @@
     GOVC_INSECURE: 1
   tasks:
     - name: Get Cluster infraID
-      command: jq -r .infraID "{{ playbook_dir }}/install-dir/metadata.json"  # noqa 301
+      command: jq -r .infraID "{{ playbook_dir }}/install-dir/metadata.json" # noqa 301
       register: infraID
 
     - name: Run the add-new-nodes role
@@ -18,8 +18,24 @@
         name: add_new_nodes
 
     - name: Delete CoreDNS Server
-      command: "govc vm.destroy {{ infraID.stdout }}-{{ coredns_vm.name }}"
+      command: "govc vm.destroy {{ infraID.stdout }}-{{ coredns_vm.name }}" # noqa 301
+      when: skip_dns is not defined
 
     - name: Redeploy CoreDNS Server
       import_role:
         name: coredns
+      when: skip_dns is not defined
+
+    - name: Pause while CoreDNS VM Loads
+      pause:
+        minutes: 1
+      when: skip_dns is not defined
+
+    - name: Delete HAProxy LB Server
+      command: "govc vm.destroy {{ infraID.stdout }}-{{ lb_vm.name }}" # noqa 301
+      when: skip_lb is not defined
+
+    - name: Redeploy HAProxy LB Server
+      import_role:
+        name: loadbalancer
+      when: skip_lb is not defined
