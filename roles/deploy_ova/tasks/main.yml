@@ -32,3 +32,7 @@
       power_on: False
       validate_certs: False
     when: skip_ova is not defined
+
+  - name: Update VM options on the template
+    command: "govc vm.change -vm {{ vcenter.folder_absolute_path }}/{{ vcenter.template_name }} -latency high -e=disk.EnableUUID=TRUE" # noqa 204
+    when: skip_ova is not defined

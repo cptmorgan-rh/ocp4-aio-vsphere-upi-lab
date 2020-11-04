@@ -135,6 +135,7 @@ oc get co
 ### Add additional worker nodes after deploying the cluster_name
 
 1. Add a new line to `group_vars\all.yml`
+
    Ex. `- { name: "worker3", ipaddr: "10.0.0.26", cpus: "2", memory_mb: "8192", disk_size_gb: "120"}`
 2. Running `add-new-nodes.yml` will add all additional new worker nodes and redeploy CoreDNS and the HAProxy LB with the new node information.
    * To not redeploy the CoreDNS vm add the extra variable `skip_dns=true`
