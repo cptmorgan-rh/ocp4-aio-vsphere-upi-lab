@@ -7,7 +7,7 @@ config:
   installer_ssh_key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
   pull_secret: "{{ lookup('file', '~/pull-secret.json') }}"
 vcenter:
-  ip: vcenter.example.com
+  ip: 10.0.0.200
   datastore: ds0
   network: 10.0.0.x-24
   service_account_username: administrator@vsphere.local
@@ -20,7 +20,7 @@ vcenter:
   template_name: rhcos-vmware
 download:
   channel: stable
-  version: "4.6"
+  version: 4.6
   govc: https://github.com/vmware/govmomi/releases/download/v0.23.0/govc_linux_amd64.gz
 coredns_vm:
   name: coredns

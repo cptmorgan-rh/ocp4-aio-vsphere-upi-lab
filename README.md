@@ -25,13 +25,16 @@ This is a concise summary of everything you need to do to use the repo. Rest of 
 
 ## Infrastructure Prerequisites
 
-1. vSphere ESXi and vCenter 6.7 or 7.0 installed.
+1. vSphere ESXi and vCenter 6.7U3 or 7.0 installed.
+   * 6.5 is not supported by this repository due to HW Version 15.
 2. A datacenter created with a vSphere host added to it, a datastore exists and has adequate capacity
 3. Ansible (preferably latest) on the machine where this repo is cloned.
    * Before you install Ansible, install the `epel-release`, run `yum -y install epel-release`
 4. Your DNS Provider (PiHole, AdGuard, etc) should be configured to lookup your `base_domain` from your `coredns_vm.ipaddr`
    * Optionally, you configure the `coredns_vm.upstream_dns` to be your primary DNS Server and then configure your workstation or bastion host to use the CoreDNS Server as your primary DNS Server.
    * If you wish to use the CoreDNS as your primary DNS Server see the [deploy-aio-lab.yml Extra Variables](https://github.com/cptmorgan-rh/ocp4-aio-vsphere-upi-lab#deploy-aio-labyml-extra-variables) section below.
+
+   ***NOTE: If you are going to use the CoreDNS vm as your primary DNS Server you must specify your vcenter in group_vars/all.yml as an IP address as no A Record will exist.***
 
  ## Installation Steps
 
