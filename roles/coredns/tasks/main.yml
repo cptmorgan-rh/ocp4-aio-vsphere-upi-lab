@@ -36,16 +36,6 @@
   set_fact:
     CoreDNS_ign: "{{ lookup('file', '{{ coredns_tempdir.path }}/CoreDNS.ign') | b64encode }}" # noqa 207
 
-- name: Create CoreDNS.merged.ign in "{{ coredns_tempdir.path }}"/
-  template:
-    src: templates/CoreDNS.merged.ign.j2
-    dest: "{{ coredns_tempdir.path }}/CoreDNS.merged.ign"
-    mode: 0664
-
-- name: Set CoreDNS_merged_ign Fact
-  set_fact:
-    CoreDNS_merged_ign: "{{ lookup('file', '{{ coredns_tempdir.path }}/CoreDNS.merged.ign') | b64encode }}" # noqa 207
-
 - name: Create CoreDNS VMs from the template
   vmware_guest:
     hostname: "{{ vcenter.ip }}"
@@ -70,7 +60,7 @@
     wait_for_ip_address: no
     customvalues:
      - key: guestinfo.ignition.config.data
-       value: "{{ CoreDNS_merged_ign }}"
+       value: "{{ CoreDNS_ign }}"
      - key: guestinfo.ignition.config.data.encoding
        value: base64
      - key: guestinfo.afterburn.initrd.network-kargs

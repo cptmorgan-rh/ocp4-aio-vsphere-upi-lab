@@ -26,16 +26,6 @@
   set_fact:
     lb_ign: "{{ lookup('file', '{{ lb_tempdir.path }}/lb.ign') | b64encode }}" # noqa 207
 
-- name: Create lb.merged.ign in {{ lb_tempdir.path }}/
-  template:
-    src: templates/lb.merged.ign.j2
-    dest: "{{ lb_tempdir.path }}/lb.merged.ign"
-    mode: 0664
-
-- name: Set lb_merged_ign Fact
-  set_fact:
-    lb_merged_ign: "{{ lookup('file', '{{ lb_tempdir.path }}/lb.merged.ign') | b64encode }}" # noqa 207
-
 - name: Create HAProxy Loadbalancer VM from the template
   vmware_guest:
     hostname: "{{ vcenter.ip }}"
@@ -60,7 +50,7 @@
     wait_for_ip_address: no
     customvalues:
      - key: guestinfo.ignition.config.data
-       value: "{{ lb_merged_ign }}"
+       value: "{{ lb_ign }}"
      - key: guestinfo.ignition.config.data.encoding
        value: base64
      - key: guestinfo.afterburn.initrd.network-kargs
