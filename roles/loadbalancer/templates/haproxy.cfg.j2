@@ -1,73 +1,68 @@
 defaults
+  mode  tcp
   maxconn 20000
-  mode    tcp
-  log     /var/run/haproxy/haproxy-log.sock local0
+  log   /var/run/haproxy/haproxy-log.sock local0
   option  dontlognull
   retries 3
   timeout http-request 10s
-  timeout queue        1m
-  timeout connect      10s
-  timeout client       86400s
-  timeout server       86400s
-  timeout tunnel       86400s
+  timeout queue  1m
+  timeout connect  10s
+  timeout client   86400s
+  timeout server   86400s
+  timeout tunnel   86400s
 
-frontend stats
-	bind {{ lb_vm.ipaddr }}:1936
-        mode            http
-        log             global
-        maxconn 10
-        clitimeout      100s
-        srvtimeout      100s
-        contimeout      100s
-        timeout queue   100s
-        stats enable
-        stats hide-version
-        stats refresh 10s
-        stats show-node
-        stats auth admin:password
-        stats uri  /haproxy?stats
+listen stats
+	bind  *:1936
+  mode  http
+  log   global
+  stats enable
+  stats hide-version
+  stats refresh 10s
+  stats show-node
+  stats auth admin:password
+  stats uri /haproxy?stats
 
 frontend api-server
-    bind {{ lb_vm.ipaddr }}:6443
-    default_backend api-server
+  bind {{ lb_vm.ipaddr }}:6443
+  default_backend api-server
 
 frontend machine-config-server
-    bind {{ lb_vm.ipaddr }}:22623
-    default_backend machine-config-server
+  bind {{ lb_vm.ipaddr }}:22623
+  default_backend machine-config-server
 
 frontend router-http
-    bind {{ lb_vm.ipaddr }}:80
-    default_backend ingress-http
+  bind {{ lb_vm.ipaddr }}:80
+  default_backend ingress-http
 
 frontend router-https
-    bind {{ lb_vm.ipaddr }}:443
-    default_backend ingress-https
+  bind {{ lb_vm.ipaddr }}:443
+  default_backend ingress-https
 
 backend api-server
-    balance roundrobin
-    server {{ bootstrap_vm.name }} {{ bootstrap_vm.ipaddr }}:6443 check
+  balance roundrobin
+  server {{ bootstrap_vm.name }} {{ bootstrap_vm.ipaddr }}:6443 check
 {% for master in master_vms %}
-    server {{ master.name }} {{ master.ipaddr }}:6443 check
+  server {{ master.name }} {{ master.ipaddr }}:6443 check
 {% endfor %}
 
 
 backend machine-config-server
-    balance roundrobin
-    server {{ bootstrap_vm.name }} {{ bootstrap_vm.ipaddr }}:22623 check
+  balance roundrobin
+  server {{ bootstrap_vm.name }} {{ bootstrap_vm.ipaddr }}:22623 check
 {% for master in master_vms %}
-    server {{ master.name }} {{ master.ipaddr }}:22623 check
+  server {{ master.name }} {{ master.ipaddr }}:22623 check
 {% endfor %}
 
 backend ingress-http
-    balance roundrobin
-    mode tcp
+  balance roundrobin
+  mode tcp
 {% for worker in worker_vms %}
-    server {{ worker.name }} {{ worker.ipaddr }}:80 check
+  server {{ worker.name }} {{ worker.ipaddr }}:80 check
 {% endfor %}
 
 backend ingress-https
-    balance roundrobin
-    mode tcp
+  balance roundrobin
+  mode tcp
 {% for worker in worker_vms %}
-    server {{ worker.name }} {{ worker.ipaddr }}:443 check
+  server {{ worker.name }} {{ worker.ipaddr }}:443 check
 {% endfor %}
