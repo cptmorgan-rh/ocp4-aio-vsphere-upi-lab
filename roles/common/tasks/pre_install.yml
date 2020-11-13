@@ -1,3 +1,7 @@
+    - name: get service facts
+      service_facts:
+      when: config_local_dns is defined
+
     - name: Set the datacenter variable
       set_fact:
         datacenter: "{{ vcenter.datacenter }}"
@@ -105,11 +109,16 @@
         dest: "{{ playbook_dir }}/install-dir/install-config.yaml"
         mode: '0664'
 
-    - name: Run steps pertaining to proxy, if any
-      include: handle_proxy.yml
-      when:
-        - proxy is defined
-        - proxy.enabled == true # noqa 601
+    - name: Create a dictionary out of the install-config.yaml file
+      include_vars:
+        file: '{{ playbook_dir }}/install-dir/install-config.yaml'
+        name: install_config
+
+    - name: Convert the install_config dict back into YAML for installation
+      copy:
+        content: "{{ install_config | to_yaml }}"
+        dest: "{{ playbook_dir }}/install-dir/install-config.yaml"
+        mode: '0664'
 
     - name: Backup the install-config.yaml file
       copy:

@@ -80,7 +80,7 @@ ansible-playbook deploy-aio-lab.yml
 ```
 ### deploy-aio-lab.yml Extra Variables
 
-`config_resolv=true` - Configures /etc/resolv.conf to use CoreDNS as primary DNS after CoreDNS has been deployed.
+`config_local_dns=true` - Configures /etc/resolv.conf or systemd-resolved to use CoreDNS as primary DNS after CoreDNS has been deployed.
 
 `skip_ova=true` - Skips downloading and deploying the OVA if previous deployed to vCenter.
 
@@ -98,8 +98,8 @@ ansible-playbook deploy-aio-lab.yml -e cluster=true
 # Destroy the Lab and all components while retaining the ova
 ansible-playbook destroy-aio-lab.yml -e cluster=true -e skip_ova=true
 
-# Destroy the Lab and all components and revert /etc/resolv.conf
-ansible-playbook destroy-aio-lab.yml -e cluster=true -e config_resolv=true
+# Destroy the Lab and all components and revert DNS Configuration
+ansible-playbook destroy-aio-lab.yml -e cluster=true -e config_local_dns=true
 ```
 ### destroy-aio-lab.yml Extra Variables
 
