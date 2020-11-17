@@ -1,0 +1,38 @@
+variant: fcos
+version: 1.1.0
+passwd:
+  users:
+    - name: core
+      ssh_authorized_keys:
+        - {{ config.installer_ssh_key }}
+storage:
+  files:
+    - path: /opt/coredns/Corefile
+      contents:
+        local: Corefile
+      mode: 0644
+    - path: /opt/coredns/coredns.db
+      contents:
+        local: coredns.db
+      mode: 0644
+systemd:
+  units:
+    - name: coredns.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=coredns
+        After=network-online.target
+        Wants=network-online.target
+        [Service]
+        TimeoutStartSec=0
+        ExecStartPre=-/bin/podman kill coredns
+        ExecStartPre=-/bin/podman rm coredns
+        ExecStartPre=/bin/podman pull quay.io/openshift/origin-coredns
+        ExecStart=/bin/podman run --name coredns \
+         --net=host \
+         --privileged \
+         -v /opt/coredns/:/root/:Z \
+        quay.io/openshift/origin-coredns -conf /root/Corefile
+        [Install]
+        WantedBy=multi-user.target
