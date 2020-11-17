@@ -30,6 +30,7 @@
       file:
         path: "/etc/systemd/resolved.conf.d/{{ config.cluster_domain }}.conf"
         state: absent
+      become: yes
       when:
         - resolved_conf.stat.exists
         - ansible_facts.services["systemd-resolved.service"].state == "running"
@@ -38,6 +39,7 @@
       service:
         name: systemd-resolved
         state: restarted
+      become: yes
       when: ansible_facts.services["systemd-resolved.service"].state == "running"
 
     - name: Set the datacenter variable
@@ -63,24 +65,24 @@
       when: bootstrap is defined
 
     - name: Delete Cluster
-      shell: "govc find -type m | grep {{ infraID.stdout }} | grep -v {{ vcenter.template_name }} | cut -d/ -f4 | xargs govc vm.destroy"  # noqa 301 306
+      shell: "{{ playbook_dir }}/bin/govc find -type m | grep {{ infraID.stdout }} | grep -v {{ vcenter.template_name }} | cut -d/ -f4 | xargs {{ playbook_dir }}/bin/govc vm.destroy"  # noqa 301 306
       when: cluster is defined
 
     - name: Delete Red Hat CoreOS Template
-      command: "govc vm.destroy {{ vcenter.template_name }}"  # noqa 301
+      command: "{{ playbook_dir }}/bin/govc vm.destroy {{ vcenter.template_name }}"  # noqa 301
       when:
         - cluster is defined
         - skip_ova is not defined
 
     - name: Delete VM Folder
-      command: "govc object.destroy {{ vcenter.folder_absolute_path }}"  # noqa 301
+      command: "{{ playbook_dir }}/bin/govc object.destroy {{ vcenter.folder_absolute_path }}"  # noqa 301
       when:
         - cluster is defined
 
     - name: Delete VM Tag
-      command: "govc tags.rm {{ infraID.stdout }}"  # noqa 301
+      command: "{{ playbook_dir }}/bin/govc tags.rm {{ infraID.stdout }}"  # noqa 301
       when: cluster is defined
 
     - name: Delete VM Tag Category
-      command: "govc tags.category.rm {{ infraID.stdout }}"  # noqa 301
+      command: "{{ playbook_dir }}/bin/govc tags.category.rm {{ infraID.stdout }}"  # noqa 301
       when: cluster is defined
