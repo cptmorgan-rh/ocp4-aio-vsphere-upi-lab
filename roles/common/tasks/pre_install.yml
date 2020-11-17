@@ -3,9 +3,14 @@
   set_fact:
     datacenter: "{{ vcenter.datacenter }}"
 
+- name: get service facts
+  service_facts:
+  when: config_local_dns is defined
+
 - name: Install the necessary linux packages which will be needed later in the ansible run
   package:
     name:
+      - patch
       - jq
   become: true
 
