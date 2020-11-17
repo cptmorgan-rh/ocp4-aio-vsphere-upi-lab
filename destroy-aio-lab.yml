@@ -10,12 +10,35 @@
 
   tasks:
 
+    - name: get service facts
+      service_facts:
+      when: config_local_dns is defined
+
     - name: Restore backup of /etc/resolv.conf
       copy:
         src: /etc/resolv.conf.backup-aio
         dest: /etc/resolv.conf
         mode: '0644'
-      when: config_resolv is defined
+      when: ansible_facts.services["systemd-resolved.service"].state != "running"
+
+    - name: stat {{ config.cluster_domain }}.conf
+      stat:
+        path: "/etc/systemd/resolved.conf.d/{{ config.cluster_domain }}.conf"
+      register: resolved_conf
+
+    - name: Delete resolved conf file
+      file:
+        path: "/etc/systemd/resolved.conf.d/{{ config.cluster_domain }}.conf"
+        state: absent
+      when:
+        - resolved_conf.stat.exists
+        - ansible_facts.services["systemd-resolved.service"].state == "running"
+
+    - name: Restart systemd-resolved service
+      service:
+        name: systemd-resolved
+        state: restarted
+      when: ansible_facts.services["systemd-resolved.service"].state == "running"
 
     - name: Set the datacenter variable
       set_fact:
