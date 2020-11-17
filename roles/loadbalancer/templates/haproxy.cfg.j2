@@ -45,7 +45,6 @@ backend api-server
   server {{ master.name }} {{ master.ipaddr }}:6443 check
 {% endfor %}
 
-
 backend machine-config-server
   balance roundrobin
   server {{ bootstrap_vm.name }} {{ bootstrap_vm.ipaddr }}:22623 check

@@ -1,0 +1,16 @@
+  - name: Create /etc/systemd/resolved.conf.d/ folder
+    file:
+      path: /etc/systemd/resolved.conf.d/
+      state: directory
+      mode: '0755'
+
+  - name: Copy dns.conf template to resoled.conf.d folder
+    template:
+      src: templates/dns.conf.j2
+      dest: "/etc/systemd/resolved.conf.d/{{ config.cluster_domain }}.conf"
+      mode: '0644'
+
+  - name: Restart systemd-resolved service
+    service:
+      name: systemd-resolved
+      state: restarted

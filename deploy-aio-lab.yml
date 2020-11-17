@@ -46,8 +46,8 @@
 
     - name: Configure /etc/resolv.conf with CoreDNS IP
       import_role:
-        name: configure_etc_resolv
-      when: config_resolv is defined
+        name: local_dns
+      when: config_local_dns is defined
 
     - name: Run the loadbalancer role to deploy the HAProxy server
       import_role:

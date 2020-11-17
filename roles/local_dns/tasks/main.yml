@@ -1,0 +1,9 @@
+  - name: Run the etc_resolv steps
+    include: etc_resolv.yml
+    when: ansible_facts.services["systemd-resolved.service"].state != "running"
+    become: yes
+
+  - name: Run all the install steps
+    include: resolved.yml
+    when: ansible_facts.services["systemd-resolved.service"].state == "running"
+    become: yes

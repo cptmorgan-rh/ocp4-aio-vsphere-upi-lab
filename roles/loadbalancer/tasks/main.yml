@@ -1,6 +1,5 @@
 ---
-
-- name: Create Temp Build Directory for CoreDNS
+- name: Create Temp Build Directory for HAProxy
   tempfile:
     state: directory
     suffix: lb
@@ -12,19 +11,18 @@
     dest: "{{ lb_tempdir.path }}/haproxy.cfg"
     mode: 0664
 
-- name: Set haproxy_cfg_b64 Fact
-  set_fact:
-    haproxy_cfg_b64: "{{ lookup('file', '{{ lb_tempdir.path }}/haproxy.cfg') | b64encode }}" # noqa 207
-
-- name: Create lb.ign in {{ lb_tempdir.path }}/
+- name: Create lb.fcc in "{{ lb_tempdir.path }}"
   template:
-    src: templates/lb.ign.j2
-    dest: "{{ lb_tempdir.path }}/lb.ign"
+    src: templates/lb.fcc.j2
+    dest: "{{ lb_tempdir.path }}/lb.fcc"
     mode: 0664
+
+- name: Create HAProxy transpiled ignition file
+  shell: "{{ playbook_dir }}/bin/fcct -d {{ lb_tempdir.path }} --pretty --strict < {{ lb_tempdir.path }}/lb.fcc > {{ lb_tempdir.path }}/transpiled_config.ign" # noqa 301
 
 - name: Set lb_ign Fact
   set_fact:
-    lb_ign: "{{ lookup('file', '{{ lb_tempdir.path }}/lb.ign') | b64encode }}" # noqa 207
+    lb_ign: "{{ lookup('file', '{{ lb_tempdir.path }}/transpiled_config.ign') | b64encode }}" # noqa 207
 
 - name: Create HAProxy Loadbalancer VM from the template
   vmware_guest:
@@ -56,7 +54,7 @@
      - key: guestinfo.afterburn.initrd.network-kargs
        value: "ip={{ lb_vm.ipaddr }}::{{ static_ip.gateway }}:{{ static_ip.netmask }}:{{ infraID.stdout }}-{{ lb_vm.name }}:ens192:off:{{ coredns_vm.ipaddr }}" # noqa 204
 
-- name: Remove {{ coredns_tempdir.path }} and contents
+- name: Remove {{ lb_tempdir.path }} and contents
   file:
     path: "{{ lb_tempdir.path }}"
     state: absent

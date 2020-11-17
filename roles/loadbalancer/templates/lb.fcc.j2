@@ -1,0 +1,35 @@
+variant: fcos
+version: 1.1.0
+passwd:
+  users:
+    - name: core
+      ssh_authorized_keys:
+        - {{ config.installer_ssh_key }}
+storage:
+  files:
+    - path: /etc/haproxy/haproxy.cfg
+      contents:
+        local: haproxy.cfg
+      mode: 0644
+systemd:
+  units:
+    - name: haproxy.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=haproxy
+        After=network-online.target
+        Wants=network-online.target
+        [Service]
+        TimeoutStartSec=0
+        ExecStartPre=-/bin/podman kill haproxy
+        ExecStartPre=-/bin/podman rm haproxy
+        ExecStartPre=/bin/podman pull quay.io/openshift/origin-haproxy-router
+        ExecStart=/bin/podman run --name haproxy \
+         --net=host \
+         --privileged \
+         --entrypoint=/usr/sbin/haproxy \
+         -v /etc/haproxy/haproxy.cfg:/var/lib/haproxy/conf/haproxy.cfg:Z \
+        quay.io/openshift/origin-haproxy-router -f /var/lib/haproxy/conf/haproxy.cfg
+        [Install]
+        WantedBy=multi-user.target

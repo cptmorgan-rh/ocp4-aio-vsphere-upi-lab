@@ -1,40 +1,34 @@
 ---
-
 - name: Create Temp Build Directory for CoreDNS
   tempfile:
     state: directory
     suffix: coredns
   register: coredns_tempdir
 
-- name: Create coredns.db file in "{{ coredns_tempdir.path }}"/
+- name: Create coredns.db file in "{{ coredns_tempdir.path }}"
   template:
     src: templates/coredns.db.j2
     dest: "{{ coredns_tempdir.path }}/coredns.db"
     mode: 0664
 
-- name: Set coredns_db_b64 Fact
-  set_fact:
-    coredns_db_b64: "{{ lookup('file', '{{ coredns_tempdir.path }}/coredns.db') | b64encode }}" # noqa 207
-
-- name: Create Corefile_b64 file in "{{ coredns_tempdir.path }}"/
+- name: Create Corefile_b64 file in "{{ coredns_tempdir.path }}"
   template:
     src: templates/Corefile.j2
     dest: "{{ coredns_tempdir.path }}/Corefile"
     mode: 0664
 
-- name: Set Corefile Fact
-  set_fact:
-    Corefile_b64: "{{ lookup('file', '{{ coredns_tempdir.path }}/Corefile') | b64encode }}" # noqa 207
-
-- name: Create CoreDNS.ign in "{{ coredns_tempdir.path }}"/
+- name: Create coredns.fcc in "{{ coredns_tempdir.path }}"
   template:
-    src: templates/CoreDNS.ign.j2
-    dest: "{{ coredns_tempdir.path }}/CoreDNS.ign"
+    src: templates/coredns.fcc.j2
+    dest: "{{ coredns_tempdir.path }}/coredns.fcc"
     mode: 0664
 
-- name: Set CoreDNS_ign Fact
+- name: Create CoreDNS transpiled ignition file
+  shell: "{{ playbook_dir }}/bin/fcct -d {{ coredns_tempdir.path }} --pretty --strict < {{ coredns_tempdir.path }}/coredns.fcc > {{ coredns_tempdir.path }}/transpiled_config.ign" # noqa 301
+
+- name: Set coredns_ign Fact
   set_fact:
-    CoreDNS_ign: "{{ lookup('file', '{{ coredns_tempdir.path }}/CoreDNS.ign') | b64encode }}" # noqa 207
+    coredns_ign: "{{ lookup('file', '{{ coredns_tempdir.path }}/transpiled_config.ign') | b64encode }}" # noqa 207
 
 - name: Create CoreDNS VMs from the template
   vmware_guest:
@@ -60,7 +54,7 @@
     wait_for_ip_address: no
     customvalues:
      - key: guestinfo.ignition.config.data
-       value: "{{ CoreDNS_ign }}"
+       value: "{{ coredns_ign }}"
      - key: guestinfo.ignition.config.data.encoding
        value: base64
      - key: guestinfo.afterburn.initrd.network-kargs
