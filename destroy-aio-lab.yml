@@ -10,8 +10,14 @@
 
   tasks:
 
-    - name: get service facts
+    - name: Get service facts
       service_facts:
+      when: config_local_dns is defined
+
+    - name: stat /etc/resolv.conf.backup-aio
+      stat:
+        path: /etc/resolv.conf.backup-aio
+      register: resolv_conf_backup
       when: config_local_dns is defined
 
     - name: Restore backup of /etc/resolv.conf
@@ -19,12 +25,16 @@
         src: /etc/resolv.conf.backup-aio
         dest: /etc/resolv.conf
         mode: '0644'
-      when: ansible_facts.services["systemd-resolved.service"].state != "running"
+      when:
+        - config_local_dns is defined
+        - resolv_conf_backup.stat.exists
+        - ansible_facts.services["systemd-resolved.service"].state != "running"
 
     - name: stat {{ config.cluster_domain }}.conf
       stat:
         path: "/etc/systemd/resolved.conf.d/{{ config.cluster_domain }}.conf"
       register: resolved_conf
+      when: config_local_dns is defined
 
     - name: Delete resolved conf file
       file:
@@ -32,6 +42,7 @@
         state: absent
       become: yes
       when:
+        - config_local_dns is defined
         - resolved_conf.stat.exists
         - ansible_facts.services["systemd-resolved.service"].state == "running"
 
@@ -40,7 +51,9 @@
         name: systemd-resolved
         state: restarted
       become: yes
-      when: ansible_facts.services["systemd-resolved.service"].state == "running"
+      when:
+        - config_local_dns is defined
+        - ansible_facts.services["systemd-resolved.service"].state == "running"
 
     - name: Set the datacenter variable
       set_fact:
@@ -76,8 +89,7 @@
 
     - name: Delete VM Folder
       command: "{{ playbook_dir }}/bin/govc object.destroy {{ vcenter.folder_absolute_path }}"  # noqa 301
-      when:
-        - cluster is defined
+      when: cluster is defined
 
     - name: Delete VM Tag
       command: "{{ playbook_dir }}/bin/govc tags.rm {{ infraID.stdout }}"  # noqa 301
