@@ -6,12 +6,12 @@
 
 - name: Insert CoreDNS IP as nameserver
   lineinfile:
-    path: /etc/resolv.conf.backup-aio
+    path: /etc/resolv.conf
     insertafter: '^search'
     line: "nameserver {{ coredns_vm.ipaddr }}"
 
 - name: Configure search
   lineinfile:
-    path: /etc/resolv.conf.backup-aio
+    path: /etc/resolv.conf
     regexp: '^search'
     line: "search {{ config.cluster_domain }} {{ config.base_domain }}"
