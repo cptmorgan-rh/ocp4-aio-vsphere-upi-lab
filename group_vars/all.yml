@@ -6,6 +6,7 @@ config:
   fips: false
   installer_ssh_key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
   pull_secret: "{{ lookup('file', '~/pull-secret.json') }}"
+  worker_prefix: worker
 vcenter:
   ip: 10.0.0.200
   datastore: ds0
@@ -15,6 +16,7 @@ vcenter:
   admin_username: administrator@vsphere.local
   admin_password: Password1!
   datacenter: LAB
+  cluster: LAB
   folder_absolute_path:
   vm_power_state: poweredon
   template_name: rhcos-vmware

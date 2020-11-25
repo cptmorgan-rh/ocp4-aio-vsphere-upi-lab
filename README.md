@@ -137,13 +137,14 @@ oc get co
 
 ### Add additional worker nodes after deploying the cluster_name
 
-1. Add a new line to `group_vars\all.yml`
+1. Specify the worker_prefix in `group_vars\all.yml` under the config section.
+2. Add a new line to `group_vars\all.yml` under `worker_vms`.
 
    Ex. `- { name: "worker3", ipaddr: "10.0.0.26", cpus: "2", memory_mb: "8192", disk_size_gb: "120"}`
-2. Running `add-new-nodes.yml` will add all additional new worker nodes and redeploy CoreDNS and the HAProxy LB with the new node information.
+3. Running `add-new-nodes.yml` will add all additional new worker nodes and redeploy CoreDNS and the HAProxy LB with the new node information.
    * To not redeploy the CoreDNS vm add the extra variable `skip_dns=true`
    * To not redeploy the HAProxy LB vm add the extra variable `skip_lb=true`
-3. If you choose to redeploy the HAProxy LB vm you can scale the ingress controller by following these steps: [Scaling an Ingress Controller
+4. If you choose to redeploy the HAProxy LB vm you can scale the ingress controller by following these steps: [Scaling an Ingress Controller
 ](https://docs.openshift.com/container-platform/4.6/networking/ingress-operator.html#nw-ingress-controller-configuration_configuring-ingress)
 
 ## Special Thanks:

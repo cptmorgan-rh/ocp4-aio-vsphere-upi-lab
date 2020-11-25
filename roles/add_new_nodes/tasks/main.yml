@@ -13,7 +13,7 @@
   when: vcenter.folder_absolute_path is defined and vcenter.folder_absolute_path | type_debug == "NoneType"
 
 - name: Check for nodes in vCenter
-  shell: "govc find -type m | grep {{ infraID.stdout }} | awk -F/ '{ print $NF }' | grep worker"  # noqa 301 306
+  shell: "govc find -type m | grep {{ vcenter.folder_absolute_path | quote }} | awk -F/ '{ print $NF }' | grep {{ config.worker_prefix }}"  # noqa 301 306
   register: govc_output
 
 - name: Fail when no new nodes to add
@@ -28,6 +28,7 @@
     username: "{{ vcenter.service_account_username }}"
     password: "{{ vcenter.service_account_password }}"
     datacenter: "{{ vcenter.datacenter }}"
+    cluster: "{{ vcenter.cluster }}"
     validate_certs: no
     folder: "{{ vcenter.folder_absolute_path }}"
     name: "{{ infraID.stdout }}-{{ item.name }}"
@@ -61,23 +62,23 @@
     new_nodes: "{{ worker_vms|count - govc_output.stdout_lines|count }}"
 
 - name: Wait for node-bootstraper csrs to approve
-  shell: oc get csr -o json --kubeconfig="{{ playbook_dir }}"/install-dir/auth/kubeconfig | jq -r '.items[] | select(.status == {}) | .metadata.name' # noqa 204 301 306
+  shell: "{{ playbook_dir }}/bin/oc get csr -o json --kubeconfig={{ playbook_dir }}/install-dir/auth/kubeconfig | jq -r '.items[] | select(.status == {}) | .metadata.name'" # noqa 204 301 306
   register: result_csr
   until: result_csr['stdout_lines']|count == new_nodes|int
   retries: 60
   delay: 60
 
 - name: Approve the csrs
-  command: oc adm certificate approve "{{ item }}" --kubeconfig="{{ playbook_dir }}"/install-dir/auth/kubeconfig # noqa 301
+  command: "{{ playbook_dir }}/bin/oc adm certificate approve {{ item }} --kubeconfig={{ playbook_dir }}/install-dir/auth/kubeconfig" # noqa 301
   loop: "{{ result_csr['stdout_lines'] }}"
 
 - name: Wait for system:node csrs to approve
-  shell: oc get csr -o json --kubeconfig="{{ playbook_dir }}"/install-dir/auth/kubeconfig | jq -r '.items[] | select(.status == {}) | .metadata.name'  # noqa 204 301 306
+  shell: "{{ playbook_dir }}/bin/oc get csr -o json --kubeconfig={{ playbook_dir }}/install-dir/auth/kubeconfig | jq -r '.items[] | select(.status == {}) | .metadata.name'"  # noqa 204 301 306
   register: result_system
   until: result_system['stdout_lines']|count == new_nodes|int
   retries: 60
   delay: 60
 
 - name: Approve the csrs
-  command: oc adm certificate approve "{{ item }}" --kubeconfig="{{ playbook_dir }}"/install-dir/auth/kubeconfig # noqa 301
+  command: "{{ playbook_dir }}/bin/oc adm certificate approve {{ item }} --kubeconfig={{ playbook_dir }}/install-dir/auth/kubeconfig" # noqa 301
   loop: "{{ result_system['stdout_lines'] }}"
