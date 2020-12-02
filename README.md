@@ -49,7 +49,7 @@ This is a concise summary of everything you need to do to use the repo. Rest of 
     5. Admin account password
     6. Datacenter name *(created in the prerequisites mentioned above)*
     7. Datastore name
-    8. Absolute path of the vCenter folder to use *(optional)*. If this field is not populated, its is auto-populated and points to `/${vcenter.datacenter}/vm/${config.cluster_name}`
+    8. Absolute path of the vCenter folder to use *(optional)*. If this field is not populated, its is auto-populated and points to `/${vcenter.datacenter}/vm/${infraID}`
  3. Downloadable link to `govc` (vSphere CLI, *pre-populated*)
  4. OpenShift cluster
     1. base domain *(pre-populated with **example.com**)*
