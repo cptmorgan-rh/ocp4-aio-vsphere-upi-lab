@@ -5,19 +5,19 @@
     suffix: coredns
   register: coredns_tempdir
 
-- name: Create coredns.db file in "{{ coredns_tempdir.path }}"
+- name: "Create coredns.db file in {{ coredns_tempdir.path }}"
   template:
     src: templates/coredns.db.j2
     dest: "{{ coredns_tempdir.path }}/coredns.db"
     mode: 0664
 
-- name: Create Corefile_b64 file in "{{ coredns_tempdir.path }}"
+- name: "Create Corefile_b64 file in {{ coredns_tempdir.path }}"
   template:
     src: templates/Corefile.j2
     dest: "{{ coredns_tempdir.path }}/Corefile"
     mode: 0664
 
-- name: Create coredns.fcc in "{{ coredns_tempdir.path }}"
+- name: "Create coredns.fcc in {{ coredns_tempdir.path }}"
   template:
     src: templates/coredns.fcc.j2
     dest: "{{ coredns_tempdir.path }}/coredns.fcc"
@@ -60,7 +60,7 @@
      - key: guestinfo.afterburn.initrd.network-kargs
        value: "ip={{ coredns_vm.ipaddr }}::{{ static_ip.gateway }}:{{ static_ip.netmask }}:{{ infraID.stdout }}-{{ coredns_vm.name }}:ens192:off:{{ coredns_vm.upstream_dns }}" # noqa 204
 
-- name: Remove {{ coredns_tempdir.path }} and contents
+- name: "Remove {{ coredns_tempdir.path }} and contents"
   file:
     path: "{{ coredns_tempdir.path }}"
     state: absent

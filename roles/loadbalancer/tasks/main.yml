@@ -5,13 +5,13 @@
     suffix: lb
   register: lb_tempdir
 
-- name: Create haproxy.cfg file in {{ lb_tempdir.path }}/
+- name: "Create haproxy.cfg file in {{ lb_tempdir.path }}"
   template:
     src: templates/haproxy.cfg.j2
     dest: "{{ lb_tempdir.path }}/haproxy.cfg"
     mode: 0664
 
-- name: Create lb.fcc in "{{ lb_tempdir.path }}"
+- name: "Create lb.fcc in {{ lb_tempdir.path }}"
   template:
     src: templates/lb.fcc.j2
     dest: "{{ lb_tempdir.path }}/lb.fcc"
@@ -54,7 +54,7 @@
      - key: guestinfo.afterburn.initrd.network-kargs
        value: "ip={{ lb_vm.ipaddr }}::{{ static_ip.gateway }}:{{ static_ip.netmask }}:{{ infraID.stdout }}-{{ lb_vm.name }}:ens192:off:{{ coredns_vm.ipaddr }}" # noqa 204
 
-- name: Remove {{ lb_tempdir.path }} and contents
+- name: "Remove {{ lb_tempdir.path }} and contents"
   file:
     path: "{{ lb_tempdir.path }}"
     state: absent
