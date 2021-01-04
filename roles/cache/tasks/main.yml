@@ -18,15 +18,15 @@
     when:
       - specific_version is defined
 
-  - name: Set clients_url fact when specific_version is defined.
+  - name: Set rhcos_url fact when specific_version is defined.
     set_fact:
       rhcos_url: "https://mirror.openshift.com/pub/openshift-v4/x86_64/dependencies/rhcos/{{ specific_version.split('.')[0:2] | join('.') }}/latest"
     when:
       - specific_version is defined
 
-  - name: Set clients_url fact when specific_version is not defined.
+  - name: Set rhcos_url fact when specific_version is not defined.
     set_fact:
-      rhcos_url: "https://mirror.openshift.com/openshift-v4/x86_64/dependencies/rhcos/{{ download.version }}/latest"
+      rhcos_url: "https://mirror.openshift.com/pub/openshift-v4/x86_64/dependencies/rhcos/{{ download.version }}/latest"
     when:
       - specific_version is not defined
 
