@@ -93,7 +93,7 @@ ansible-playbook deploy-aio-lab.yml
 ### Run Destroy Playbook
 ```sh
 # Destroy the Lab and all components
-ansible-playbook deploy-aio-lab.yml -e cluster=true
+ansible-playbook destroy-aio-lab.yml -e cluster=true
 
 # Destroy the Lab and all components while retaining the ova
 ansible-playbook destroy-aio-lab.yml -e cluster=true -e skip_ova=true
