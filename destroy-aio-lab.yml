@@ -77,7 +77,7 @@
       when: bootstrap is defined
 
     - name: Delete Cluster
-      shell: "{{ playbook_dir }}/bin/govc find -type m | grep {{ vcenter.folder_absolute_path | quote }} | grep -v {{ vcenter.template_name }} | cut -d/ -f5 | xargs {{ playbook_dir }}/bin/govc vm.destroy"  # noqa 301 306
+      shell: "{{ playbook_dir }}/bin/govc find {{ vcenter.folder_absolute_path | quote }} -type m | awk -F/ '{ print $NF }' | xargs {{ playbook_dir }}/bin/govc vm.destroy"  # noqa 301 306
       when: cluster is defined
 
     - name: Delete Red Hat CoreOS Template
