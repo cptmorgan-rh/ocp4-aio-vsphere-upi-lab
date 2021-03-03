@@ -1,6 +1,6 @@
 {
     "DiskProvisioning": "thin",
-    "MarkAsTemplate": true,
+    "MarkAsTemplate": false,
     "PowerOn": false,
     "InjectOvfEnv": false,
     "WaitForIP": false,

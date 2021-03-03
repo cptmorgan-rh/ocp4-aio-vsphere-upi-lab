@@ -20,10 +20,17 @@
     command: "govc import.ova --name={{ vcenter.template_name }} --ds={{ vcenter.datastore }} --options={{ playbook_dir }}/roles/deploy_ova/files/options.json {{ playbook_dir }}/downloads/{{ vcenter.template_name }}.ova"
     when: skip_ova is not defined
 
-  - name: Update VM options on the template
+  - name: Move OVA Template to "{{ vcenter.folder_absolute_path }}"
+    command: "govc object.mv {{ vcenter.template_name }} {{ vcenter.folder_absolute_path }}"
+
+  - name: Update VM options on "{{ vcenter.template_name }}"
     command: "govc vm.change -vm {{ vcenter.folder_absolute_path }}/{{ vcenter.template_name }} -e=disk.EnableUUID=TRUE" # noqa 204
     when: skip_ova is not defined
 
-  - name: Upgrade VM version on the template
+  - name: Upgrade VM version on "{{ vcenter.template_name }}"
     command: "govc vm.upgrade -vm {{ vcenter.folder_absolute_path }}/{{ vcenter.template_name }} -version=15" # noqa 204
+    when: skip_ova is not defined
+
+  - name: Mark "{{ vcenter.template_name }}" as a template
+    command: "govc vm.markastemplate {{ vcenter.folder_absolute_path }}/{{ vcenter.template_name }}"
     when: skip_ova is not defined
