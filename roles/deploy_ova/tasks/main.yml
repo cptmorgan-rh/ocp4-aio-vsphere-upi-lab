@@ -16,21 +16,8 @@
       validate_certs: no
     when: skip_ova is not defined
 
-  - name: Deploy the OVF template into the folder
-    vmware_deploy_ovf:
-      hostname: "{{ vcenter.ip }}"
-      username: "{{ vcenter.admin_username }}"
-      password: "{{ vcenter.admin_password }}"
-      datacenter: "{{ vcenter.datacenter }}"
-      datastore: "{{ vcenter.datastore }}"
-      folder: "{{ vcenter.folder_absolute_path }}"
-      name: '{{ vcenter.template_name }}'
-      allow_duplicates: False
-      disk_provisioning: thin
-      networks: "{u'VM Network':u'{{ vcenter.network }}'}"
-      ova: "{{ playbook_dir }}/downloads/{{ vcenter.template_name }}.ova"
-      power_on: False
-      validate_certs: False
+  - name: Deploy the OVA template into the folder
+    command: "govc import.ova --name={{ vcenter.template_name }} --ds={{ vcenter.datastore }} --options={{ playbook_dir }}/roles/deploy_ova/files/options.json {{ playbook_dir }}/downloads/{{ vcenter.template_name }}.ova"
     when: skip_ova is not defined
 
   - name: Update VM options on the template
