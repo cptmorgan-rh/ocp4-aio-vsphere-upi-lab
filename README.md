@@ -84,15 +84,13 @@ ansible-playbook deploy-aio-lab.yml
 
 `config_local_dns=true` - Configures /etc/resolv.conf or systemd-resolved to use CoreDNS as primary DNS after CoreDNS has been deployed.
 
-`skip_ova=true` - Skips downloading and deploying the OVA if previous deployed to vCenter.
-
 `skip_lb=true` - Skips deploying the LoadBalancer VM if a LoadBalancer already exists.
 
 `skip_dns=true` - Skips deploying a DNS server if proper DNS is already configured.
 
 `specific_version=4.6.z` - Deploys a specific version of OpenShift. Must be in 4.x.z format.
 
-`reuse=true` - If you have previously run the playbook and do not want to download the OVA and binaries again to deploy a NEW cluster.
+`skip_download=true` - If you have previously run the playbook successfully, setting this variable will skip the downloading of the binaries and OVA.
 
 `clean=true` - Cleans out the downloads and bin directory of any previously downloaded files.
 
@@ -111,7 +109,7 @@ ansible-playbook destroy-aio-lab.yml -e cluster=true -e config_local_dns=true
 
 `cluster=true` - Required to delete the entire cluster, ova, folder, and vwware tag.
 
-`skip_ova=true` - Skips downloading and deploying the OVA if previous deployed to vCenter.
+`skip_ova=true` - Skips deleting OVA if previous deployed to vCenter.
 
 `bootstrap=true` - To delete the bootstrap VM
 

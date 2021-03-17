@@ -32,7 +32,7 @@
     - name: Run the deploy_ova to deploy the RHCOS OVA
       import_role:
         name: deploy_ova
-      when: skip_ova is not defined
+      when: skip_download is not defined
 
     - name: Run the coredns role to deploy the CoreDNS server
       import_role:
