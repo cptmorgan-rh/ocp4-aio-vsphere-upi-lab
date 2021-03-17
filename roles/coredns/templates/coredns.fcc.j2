@@ -1,5 +1,5 @@
 variant: fcos
-version: 1.1.0
+version: 1.3.0
 passwd:
   users:
     - name: core
@@ -24,6 +24,7 @@ systemd:
         Description=coredns
         After=network-online.target
         Wants=network-online.target
+
         [Service]
         TimeoutStartSec=0
         ExecStartPre=-/bin/podman kill coredns
@@ -34,5 +35,29 @@ systemd:
          --privileged \
          -v /opt/coredns/:/root/:Z \
         quay.io/openshift/origin-coredns -conf /root/Corefile
+
         [Install]
         WantedBy=multi-user.target
+
+    - name: vmtoolsd.service
+      enabled: true
+      contents: |
+        [Install]
+        WantedBy=multi-user.target
+
+        [Unit]
+        Description=Service for virtual machines hosted on VMware
+        Documentation=http://github.com/vmware/open-vm-tools
+        ConditionVirtualization=vmware
+        Requires=vgauthd.service
+        After=vgauthd.service
+        DefaultDependencies=no
+        Before=cloud-init-local.service
+
+        [Service]
+        ExecStart=/usr/bin/vmtoolsd
+        TimeoutStopSec=5
+
+        [Install]
+        WantedBy=multi-user.target
+        Also=vgauthd.service
