@@ -5,7 +5,7 @@
     suffix: lb
   register: lb_tempdir
 
-- name: "Create haproxy.cfg file in "{{ lb_tempdir.path }}"
+- name: Create haproxy.cfg file in "{{ lb_tempdir.path }}"
   template:
     src: templates/haproxy.cfg.j2
     dest: "{{ lb_tempdir.path }}/haproxy.cfg"

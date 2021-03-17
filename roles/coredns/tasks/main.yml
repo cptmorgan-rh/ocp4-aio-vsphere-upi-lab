@@ -17,7 +17,7 @@
     dest: "{{ coredns_tempdir.path }}/Corefile"
     mode: 0664
 
-- name: "Create coredns.fcc in "{{ coredns_tempdir.path }}"
+- name: Create coredns.fcc in "{{ coredns_tempdir.path }}"
   template:
     src: templates/coredns.fcc.j2
     dest: "{{ coredns_tempdir.path }}/coredns.fcc"
