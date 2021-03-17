@@ -31,8 +31,6 @@
       ova: "{{ playbook_dir }}/downloads/{{ vcenter.template_name }}.ova"
       power_on: False
       validate_certs: False
-      hardware:
-        nested_virt: true
     when: skip_ova is not defined
 
   - name: Update VM options on the template

@@ -49,6 +49,7 @@
         memory_mb: "{{ item.memory_mb }}"
         num_cpus: "{{ item.cpus }}"
         memory_reservation_lock: True
+        nested_virt: true
       networks:
       - name: "{{ vcenter.network }}"
       wait_for_ip_address: no
