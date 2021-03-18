@@ -24,8 +24,5 @@
   - name: Update VM options on "{{ vcenter.template_name }}"
     command: "govc vm.change -vm {{ vcenter.folder_absolute_path }}/{{ vcenter.template_name }} -e=disk.EnableUUID=TRUE" # noqa 204
 
-  - name: Upgrade VM version on "{{ vcenter.template_name }}"
-    command: "govc vm.upgrade -vm {{ vcenter.folder_absolute_path }}/{{ vcenter.template_name }} -version=15" # noqa 204
-
   - name: Mark "{{ vcenter.template_name }}" as a template
     command: "govc vm.markastemplate {{ vcenter.folder_absolute_path }}/{{ vcenter.template_name }}"
