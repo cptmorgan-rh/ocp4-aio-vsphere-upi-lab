@@ -13,7 +13,7 @@
   when: vcenter.folder_absolute_path is defined and vcenter.folder_absolute_path | type_debug == "NoneType"
 
 - name: Check for nodes in vCenter
-  shell: "govc find -type m | grep {{ vcenter.folder_absolute_path | quote }} | awk -F/ '{ print $NF }' | grep {{ config.worker_prefix }}"  # noqa 301 306
+  shell: "govc find -type m m -dc='' | grep {{ vcenter.folder_absolute_path | quote }} | awk -F/ '{ print $NF }' | grep {{ config.worker_prefix }}"  # noqa 301 306
   register: govc_output
 
 - name: Fail when no new nodes to add
