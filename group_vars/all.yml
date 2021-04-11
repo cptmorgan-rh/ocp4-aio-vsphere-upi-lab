@@ -24,7 +24,7 @@ download:
   channel: stable
   version: 4.6
   govc: https://github.com/vmware/govmomi/releases/download/v0.24.0/govc_linux_amd64.gz
-  fcct: https://github.com/coreos/fcct/releases/download/v0.8.0/fcct-x86_64-unknown-linux-gnu
+  butane: https://github.com/coreos/butane/releases/download/v0.10.0/fcct-x86_64-unknown-linux-gnu
 coredns_vm:
   name: coredns
   ipaddr: 10.0.0.10

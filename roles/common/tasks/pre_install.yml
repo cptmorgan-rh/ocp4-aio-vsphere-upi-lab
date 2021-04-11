@@ -59,13 +59,13 @@
     mode: '0755'
   with_items: ["bin", "downloads", "install-dir"]
 
-- name: Download fcct
+- name: Download butane
   get_url:
-    url: "{{ download.fcct }}"
+    url: "{{ download.butane }}"
     dest: "{{ playbook_dir }}/bin/fcct"
     validate_certs: no
 
-- name: Make govc executable
+- name: Make butane executable
   file:
     path: "{{ playbook_dir }}/bin/fcct"
     mode: '775'
