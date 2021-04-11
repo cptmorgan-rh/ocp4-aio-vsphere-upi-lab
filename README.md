@@ -82,7 +82,7 @@ ansible-playbook deploy-aio-lab.yml
 
 `config_local_dns=true` - Configures /etc/resolv.conf or systemd-resolved to use CoreDNS as primary DNS after CoreDNS has been deployed.
 
-`config_local_dns=true` - Configures /etc/resolv.conf or systemd-resolved to use CoreDNS as primary DNS after CoreDNS has been deployed.
+`skip_ova=true` - Skips downloading and deploying the OVA if previous deployed to vCenter.
 
 `skip_lb=true` - Skips deploying the LoadBalancer VM if a LoadBalancer already exists.
 
