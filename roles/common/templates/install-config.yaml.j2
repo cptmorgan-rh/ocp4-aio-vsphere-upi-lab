@@ -14,6 +14,8 @@ controlPlane:
   replicas: 3
 metadata:
   name: {{ config.cluster_name }}
+networking:
+  networkType: {{ config.networktype }}
 platform:
 {% if config.provider is defined and 'none' in config.provider %}
   none: {}
@@ -24,6 +26,8 @@ platform:
     password: {{ vcenter.service_account_password }}
     datacenter: {{ vcenter.datacenter }}
     defaultDatastore: {{ vcenter.datastore }}
+    cluster: {{ vcenter.cluster }}
+    network: {{ vcenter.network }}
 {% if vcenter.folder_absolute_path|type_debug != "NoneType" %}
     folder: {{ vcenter.folder_absolute_path }}
 {% endif %}

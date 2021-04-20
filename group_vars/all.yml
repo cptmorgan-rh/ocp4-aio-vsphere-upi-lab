@@ -1,12 +1,13 @@
 config:
   provider: vsphere
   base_domain: example.com
-  cluster_name: ocp46
-  cluster_domain: ocp46.example.com
+  cluster_name: ocp47
+  cluster_domain: ocp47.example.com
   fips: false
   installer_ssh_key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
   pull_secret: "{{ lookup('file', '~/pull-secret.json') }}"
   worker_prefix: worker
+  networktype: OpenShiftSDN
 vcenter:
   ip: 10.0.0.200
   datastore: ds0
@@ -22,9 +23,9 @@ vcenter:
   template_name: rhcos-vmware
 download:
   channel: stable
-  version: 4.6
+  version: 4.7
   govc: https://github.com/vmware/govmomi/releases/download/v0.24.0/govc_linux_amd64.gz
-  fcct: https://github.com/coreos/fcct/releases/download/v0.8.0/fcct-x86_64-unknown-linux-gnu
+  butane: https://github.com/coreos/butane/releases/download/v0.10.0/fcct-x86_64-unknown-linux-gnu
 coredns_vm:
   name: coredns
   ipaddr: 10.0.0.10

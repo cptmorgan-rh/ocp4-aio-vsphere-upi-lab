@@ -26,7 +26,6 @@ This is a concise summary of everything you need to do to use the repo. Rest of 
 ## Infrastructure Prerequisites
 
 1. vSphere ESXi and vCenter 6.7U3 or 7.0 installed.
-   * 6.5 is not supported by this repository due to HW Version 15.
 2. A datacenter created with a vSphere host added to it, a datastore exists and has adequate capacity
 3. Ansible (preferably latest) on the machine where this repo is cloned.
    * Before you install Ansible, install the `epel-release`, run `yum -y install epel-release`
@@ -54,6 +53,7 @@ This is a concise summary of everything you need to do to use the repo. Rest of 
  4. OpenShift cluster
     1. base domain *(pre-populated with **example.com**)*
     2. cluster name *(pre-populated with **ocp4**)*
+    3. network type *(pre-populated with **OpenShiftSDN**)
  5. If you wish to install without enabling the Kubernetes vSphere Cloud Provider (Useful for mixed installs with both Virtual Nodes and Bare Metal Nodes), change the `provider: ` to `none` in all.yaml.
     ```
     config:
