@@ -87,7 +87,7 @@
         - skip_ova is not defined
 
     - name: Delete VM Folder
-      command: "{{ playbook_dir }}/bin/govc object.destroy {{ vcenter.folder_absolute_path }}"  # noqa 301
+      command: "{{ playbook_dir }}/bin/govc object.destroy /{{ vcenter.datacenter }}/vm/{{ vcenter_folder }}"  # noqa 301
       when: cluster is defined
 
     - name: Delete VM Tag
