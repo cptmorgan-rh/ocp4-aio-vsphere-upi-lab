@@ -76,18 +76,18 @@
       command: "govc vm.destroy {{ infraID.stdout }}-{{ bootstrap_vm.name }}"  # noqa 301
       when: bootstrap is defined
 
-    - name: Delete Cluster
-      shell: "{{ playbook_dir }}/bin/govc find {{ vcenter.folder_absolute_path | quote }} -type m | awk -F/ '{ print $NF }' | xargs {{ playbook_dir }}/bin/govc vm.destroy"  # noqa 301 306
-      when: cluster is defined
-
     - name: Delete Red Hat CoreOS Template
       command: "{{ playbook_dir }}/bin/govc vm.destroy {{ vcenter.template_name }}"  # noqa 301
       when:
         - cluster is defined
         - skip_ova is not defined
 
+    - name: Delete Cluster
+      shell: "{{ playbook_dir }}/bin/govc find {{ vcenter.folder_absolute_path | quote }} -type m | awk -F/ '{ print $NF }' | xargs {{ playbook_dir }}/bin/govc vm.destroy"  # noqa 301 306
+      when: cluster is defined
+
     - name: Delete VM Folder
-      command: "{{ playbook_dir }}/bin/govc object.destroy {{ vcenter.folder_absolute_path }}"  # noqa 301
+      command: "{{ playbook_dir }}/bin/govc object.destroy /{{ vcenter.datacenter }}/vm/{{ vcenter_folder }}"  # noqa 301
       when: cluster is defined
 
     - name: Delete VM Tag

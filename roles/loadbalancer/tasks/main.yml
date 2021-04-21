@@ -30,6 +30,7 @@
     username: "{{ vcenter.service_account_username }}"
     password: "{{ vcenter.service_account_password }}"
     datacenter: "{{ vcenter.datacenter }}"
+    cluster: "{{ vcenter.cluster }}"
     validate_certs: no
     folder: "{{ vcenter.folder_absolute_path }}"
     name: "{{ infraID.stdout }}-{{ lb_vm.name }}"

@@ -23,6 +23,7 @@
       password: "{{ vcenter.admin_password }}"
       datacenter: "{{ vcenter.datacenter }}"
       datastore: "{{ vcenter.datastore }}"
+      cluster: "{{ vcenter.cluster }}"
       folder: "{{ vcenter.folder_absolute_path }}"
       name: '{{ vcenter.template_name }}'
       allow_duplicates: False
