@@ -23,7 +23,7 @@ vcenter:
   template_name: rhcos-vmware
 download:
   channel: stable
-  version: 4.7
+  version: 4.9
   govc: https://github.com/vmware/govmomi/releases/download/v0.24.0/govc_linux_amd64.gz
   butane: https://github.com/coreos/butane/releases/download/v0.10.0/fcct-x86_64-unknown-linux-gnu
 coredns_vm:
@@ -37,12 +37,12 @@ bootstrap_vm:
   name: bootstrap
   ipaddr: 10.0.0.20
 master_vms:
-  - { name: "master1", ipaddr: "10.0.0.21", cpus: "4", memory_mb: "16384", disk_size_gb: "120"}
-  - { name: "master2", ipaddr: "10.0.0.22", cpus: "4", memory_mb: "16384", disk_size_gb: "120"}
-  - { name: "master3", ipaddr: "10.0.0.23", cpus: "4", memory_mb: "16384", disk_size_gb: "120"}
+  - { name: "master1", ipaddr: "10.0.0.21", cpus: "4", memory_mb: "16384", disk_size_gb: "100"}
+  - { name: "master2", ipaddr: "10.0.0.22", cpus: "4", memory_mb: "16384", disk_size_gb: "100"}
+  - { name: "master3", ipaddr: "10.0.0.23", cpus: "4", memory_mb: "16384", disk_size_gb: "100"}
 worker_vms:
-  - { name: "worker1", ipaddr: "10.0.0.24", cpus: "2", memory_mb: "8192", disk_size_gb: "120"}
-  - { name: "worker2", ipaddr: "10.0.0.25", cpus: "2", memory_mb: "8192", disk_size_gb: "120"}
+  - { name: "worker1", ipaddr: "10.0.0.24", cpus: "2", memory_mb: "8192", disk_size_gb: "100"}
+  - { name: "worker2", ipaddr: "10.0.0.25", cpus: "2", memory_mb: "8192", disk_size_gb: "100"}
 static_ip:
   gateway: 10.0.0.1
   netmask: 255.255.255.0

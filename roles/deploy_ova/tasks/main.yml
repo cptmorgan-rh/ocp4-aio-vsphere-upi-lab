@@ -37,3 +37,7 @@
   - name: Update VM options on the template
     command: "govc vm.change -vm {{ vcenter.folder_absolute_path }}/{{ vcenter.template_name }} -e=disk.EnableUUID=TRUE" # noqa 204
     when: skip_ova is not defined
+
+  - name: Upgrade VM version on the template
+    command: "govc vm.upgrade -vm {{ vcenter.folder_absolute_path }}/{{ vcenter.template_name }} -version=15" # noqa 204
+    when: skip_ova is not defined
