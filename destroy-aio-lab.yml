@@ -65,7 +65,9 @@
     - name: Set the vcenter.infraID fact
       set_fact:
         vcenter_folder: "{{ infraID.stdout }}"
-      when: vcenter.folder_absolute_path is defined and vcenter.folder_absolute_path | type_debug == "NoneType"
+      when:
+        - vcenter.folder_absolute_path is defined
+        - vcenter.folder_absolute_path | type_debug == "NoneType"
 
     - name: Set the vcenter.folder_absolute_path if not provided
       set_fact:
@@ -82,13 +84,27 @@
         - cluster is defined
         - skip_ova is not defined
 
+    - name: Power Off Cluster
+      shell: "{{ playbook_dir }}/bin/govc find {{ vcenter.folder_absolute_path | quote }} -type m | awk -F/ '{ print $NF }' | xargs {{ playbook_dir }}/bin/govc vm.power -force=true -off"  # noqa 301 306
+      when: cluster is defined
+
     - name: Delete Cluster
       shell: "{{ playbook_dir }}/bin/govc find {{ vcenter.folder_absolute_path | quote }} -type m | awk -F/ '{ print $NF }' | xargs {{ playbook_dir }}/bin/govc vm.destroy"  # noqa 301 306
       when: cluster is defined
 
     - name: Delete VM Folder
       command: "{{ playbook_dir }}/bin/govc object.destroy /{{ vcenter.datacenter }}/vm/{{ vcenter_folder }}"  # noqa 301
-      when: cluster is defined
+      when:
+        - cluster is defined
+        - vcenter.folder_absolute_path is defined
+        - vcenter.folder_absolute_path | type_debug == "NoneType"
+
+    - name: Delete VM Folder
+      command: "{{ playbook_dir }}/bin/govc object.destroy {{ vcenter.folder_absolute_path }}"  # noqa 301
+      when:
+        - cluster is defined
+        - vcenter.folder_absolute_path is defined
+        - vcenter.folder_absolute_path | type_debug != "NoneType"
 
     - name: Delete VM Tag
       command: "{{ playbook_dir }}/bin/govc tags.rm {{ infraID.stdout }}"  # noqa 301
